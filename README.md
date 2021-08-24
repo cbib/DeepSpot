@@ -54,6 +54,36 @@ However, if needed you can change the number of epochs, batch size, image size, 
 
 **Check and update the paths to the data before training.**
 
+### Training
+
+Before training, if you have multiple GPUs, please set the cuda visible device variable to the desired GPU id, for example 0 :
+`os.environ["CUDA_VISIBLE_DEVICES"] = "0"`
+
+Then launch the training with 
+
+`python train.py`
+
+The training will output a model (the model name can be set in [global_var.py](https://github.com/cbib/DeepSpot/blob/master/deepspot/global_var.py))
+
+### Prediction
+Be sure to have set :
+* The right path to the data to be predicted
+* The right path to the model you want to use
+
+Then launch
+
+`python predict.py`
+
+The prediction will output the predicted images in a /prediction folder under the prediction path set in [global_var.py](https://github.com/cbib/DeepSpot/blob/master/deepspot/global_var.py)
+
+
+### Use an existing model
+
+To use our best model for prediction let the `save_model_folder` default value or `save_model_folder = "models/Mmixed/"` in [global_var.py](https://github.com/cbib/DeepSpot/blob/master/deepspot/global_var.py)
+
+Then launch
+
+`python predict.py`
 
 ## Support
 If you have any question relative to the repository, please open an [issue](https://github.com/cbib/deepspot). 

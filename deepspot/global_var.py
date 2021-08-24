@@ -21,7 +21,7 @@ config = {
 }
 
 out_folder_name = "path/to/results/"
-save_model_folder = "model_name"
+save_model_folder = "models/Mmixed/"
 
 ds1_train_original = "data/train/original"
 ds1_train_GT = "data/train/ground_truth"

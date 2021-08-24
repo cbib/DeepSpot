@@ -34,9 +34,6 @@ def custom_loss(y_true, y_pred):
 
 if __name__ == "__main__":
     ds_pred = dataset.Dataset(gv.dataset_pred)
-
-    pathlib.Path(os.path.join(gv.out_pred_path, 'GT')).mkdir(parents=True, exist_ok=True)
-    pathlib.Path(os.path.join(gv.out_pred_path, 'original')).mkdir(parents=True, exist_ok=True)
     pathlib.Path(os.path.join(gv.out_pred_path, 'prediction')).mkdir(parents=True, exist_ok=True)
 
     tf_ds_test = tf.data.Dataset.from_tensor_slices(ds_pred.dataset_test).batch(gv.batch_size)
@@ -55,10 +52,6 @@ if __name__ == "__main__":
         pred = test_step(x_batch_val, y_batch_val, model)
         for i in range(0, len(pred)):
             img_name = os.path.basename(paths_test[idx])
-            io.imsave(os.path.join(gv.out_pred_path, "original", img_name), x_batch_val[i].numpy() * 255,
-                      check_contrast=False)
-            io.imsave(os.path.join(gv.out_pred_path, "GT", img_name), y_batch_val[i].numpy() * 255,
-                      check_contrast=False)
             io.imsave(os.path.join(gv.out_pred_path, "prediction", img_name), pred[i].numpy() * 255,
                       check_contrast=False)
             idx += 1
