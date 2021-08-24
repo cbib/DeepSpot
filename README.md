@@ -89,7 +89,7 @@ Then launch
 If you have any question relative to the repository, please open an [issue](https://github.com/cbib/deepspot). 
 You can also contact [Emmanuel Bouilhol](mailto:emmanuel.bouilhol[AT]u-bordeaux.fr).
 
-##Contributiting
+## Contributiting
 Contributions are very welcome. Please use [Pull requests](https://github.com/cbib/deepspot/pulls).
 For major changes, please open an [issue](https://github.com/cbib/deepspot)  first to discuss what you would like to change.
 
