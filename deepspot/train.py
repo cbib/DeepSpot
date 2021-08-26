@@ -2,17 +2,17 @@
 # -*- coding: utf-8 -*-
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 os.environ["TF_XLA_FLAGS"] = "--tf_xla_cpu_global_jit"
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
 import tensorflow as tf
 import tensorflow.keras as keras
 import time
-import dataset
-import network
 import pathlib
 
+import dataset
+import network
 import global_var as gv
 
 print(tf.__version__)
@@ -75,10 +75,6 @@ def train(ds, ds_val):
 if __name__ == "__main__":
 	print("Start dataset generation")
 	start_time = time.time()
-
-	pathlib.Path(os.path.join(gv.out_folder_name, 'GT')).mkdir(parents=True, exist_ok=True)
-	pathlib.Path(os.path.join(gv.out_folder_name, 'original')).mkdir(parents=True, exist_ok=True)
-	pathlib.Path(os.path.join(gv.out_folder_name, 'prediction')).mkdir(parents=True, exist_ok=True)
 
 	ds_exp, ds_exp_list = get_ds(gv.dataset1, gv.batch_size_exp)
 	ds_sim, _ = get_ds(gv.dataset2, gv.batch_size_sim)

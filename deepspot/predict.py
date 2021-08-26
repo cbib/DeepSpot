@@ -1,6 +1,6 @@
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 os.environ["TF_XLA_FLAGS"] = "--tf_xla_cpu_global_jit"
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
@@ -40,8 +40,7 @@ if __name__ == "__main__":
     tf_ds_labels_test = tf.data.Dataset.from_tensor_slices(ds_pred.dataset_test_labels).batch(gv.batch_size)
     ds_test = tf.data.Dataset.zip((tf_ds_test, tf_ds_labels_test))
 
-    model = tf.keras.models.load_model(os.path.join('saved_model', gv.save_model_folder),
-                                       custom_objects={'custom_loss': custom_loss})
+    model = tf.keras.models.load_model( gv.load_model_path, custom_objects={'custom_loss': custom_loss})
 
     print("Start prediction ")
     start_time = time.time()
