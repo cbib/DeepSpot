@@ -101,82 +101,80 @@ def apply_kernel(img, x, y, kernel):
 
 if __name__ == '__main__':
 
-    root = "/home/ebouilhol/SpotSimulation/var_intensities"
-    tab_percent = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
+    root = "var_intensities/"
+    spot_number = 100
     kernel = np.array([[200, 230, 200], [230, 255, 230], [200, 230, 200]])
     out_image_size = 256
+    image_number
 
-    for percent in tab_percent:
 
-        pathlib.Path(os.path.join(root, str(percent), 'original')).mkdir(parents=True, exist_ok=True)
-        pathlib.Path(os.path.join(root, str(percent), 'slim')).mkdir(parents=True, exist_ok=True)
-        # pathlib.Path(os.path.join(root, str(percent), 'enhanced_fat')).mkdir(parents=True, exist_ok=True)
-        pathlib.Path(os.path.join(root, str(percent), 'masks')).mkdir(parents=True, exist_ok=True)
-        pathlib.Path(os.path.join(root, str(percent), 'csv')).mkdir(parents=True, exist_ok=True)
+    pathlib.Path(os.path.join(root, 'original')).mkdir(parents=True, exist_ok=True)
+    pathlib.Path(os.path.join(root, 'target')).mkdir(parents=True, exist_ok=True)
+    pathlib.Path(os.path.join(root, 'csv')).mkdir(parents=True, exist_ok=True)
 
-        for idx in tqdm(range(1, 401)):
-            spot_size = random.randint(4, 8)  # Plus x est grand plus le spot est petit
-            kernel_size = random.randint(13, 18)
-            perlin_level = random.choice([2, 4, 8, 16])
-            poisson_noise_level = random.randint(50, 100)
-            perlin_out_range = random.randint(50, 100)
-            full_noise_level = random.randint(80, 150)
+    for idx in tqdm(range(1, image_number+1)):
+        spot_size = random.randint(4, 8)  # The bigger X, the smaller the spot
+        kernel_size = random.randint(13, 18)
+        perlin_level = random.choice([2, 4, 8, 16])
+        poisson_noise_level = random.randint(50, 100)
+        perlin_out_range = random.randint(50, 100)
+        full_noise_level = random.randint(80, 150)
 
-            coord_map = random_unispots_coordinates(out_image_size, out_image_size)
+        coord_map = random_unispots_coordinates(out_image_size, out_image_size)
+        psf_kernel = gaussian_kernel(kernel_size, std=spot_size)
+        img = signal.convolve2d(coord_map, psf_kernel, mode="same")
+
+        for i in range(0, spot_number):
+            spot_size = random.randint(4, 8)
+            kernel_size = random.randint(13, 17)
+            coord_map2 = random_unispots_coordinates(out_image_size, out_image_size)
             psf_kernel = gaussian_kernel(kernel_size, std=spot_size)
-            img = signal.convolve2d(coord_map, psf_kernel, mode="same")
+            img2 = signal.convolve2d(coord_map2, psf_kernel, mode="same")
+            img = img + img2
+            coord_map = coord_map + coord_map2
 
-            for i in range(0, percent):
-                spot_size = random.randint(4, 8)
-                kernel_size = random.randint(13, 17)
-                coord_map2 = random_unispots_coordinates(out_image_size, out_image_size)
-                psf_kernel = gaussian_kernel(kernel_size, std=spot_size)
-                img2 = signal.convolve2d(coord_map2, psf_kernel, mode="same")
-                img = img + img2
-                coord_map = coord_map + coord_map2
+        img = exposure.rescale_intensity(img, out_range=(0, random.randint(160, 220)))
+        spot_coords = np.where(coord_map == 1)
 
-            img = exposure.rescale_intensity(img, out_range=(0, random.randint(160, 220)))
-            spot_coords = np.where(coord_map == 1)
+        #### Generate poisson noise
+        noise_map = np.random.normal(loc=0, scale=1, size=(512, 512))
+        poisson_noise = exposure.rescale_intensity(noise_map, out_range=(0, poisson_noise_level))
 
-            #### Generate poisson noise
-            noise_map = np.random.normal(loc=0, scale=1, size=(512, 512))
-            poisson_noise = exposure.rescale_intensity(noise_map, out_range=(0, poisson_noise_level))
+        #### Generate perlin noise
+        perlin_noise = generate_fractal_noise_2d((512, 512), (perlin_level, perlin_level), 5)
+        perlin_noise = exposure.rescale_intensity(perlin_noise, out_range=(0, perlin_out_range))
 
-            #### Generate perlin noise
-            perlin_noise = generate_fractal_noise_2d((512, 512), (perlin_level, perlin_level), 5)
-            perlin_noise = exposure.rescale_intensity(perlin_noise, out_range=(0, perlin_out_range))
+        #### Normalize noise
+        sum_noise = perlin_noise + poisson_noise
+        norm_sum_noise = exposure.rescale_intensity(sum_noise, out_range=(0, full_noise_level))
 
-            #### Normalize noise
-            sum_noise = perlin_noise + poisson_noise
-            norm_sum_noise = exposure.rescale_intensity(sum_noise, out_range=(0, full_noise_level))
+        #### Apply elastic transform on noise
+        cmin = int(norm_sum_noise.shape[0] / 2 - out_image_size / 2)
+        cmax = int(norm_sum_noise.shape[0] / 2 + out_image_size / 2)
+        crop = (slice(cmin, cmax), slice(cmin, cmax))
+        noise_elastic = elasticdeform.deform_random_grid(norm_sum_noise, sigma=random.randint(10, 20),
+                                                         points=random.randint(2, 6), crop=crop)
+        full_noise = exposure.rescale_intensity(noise_elastic, out_range=(0, full_noise_level))
 
-            #### Apply elastic transform on noise
-            cmin = int(norm_sum_noise.shape[0] / 2 - out_image_size / 2)
-            cmax = int(norm_sum_noise.shape[0] / 2 + out_image_size / 2)
-            crop = (slice(cmin, cmax), slice(cmin, cmax))
-            noise_elastic = elasticdeform.deform_random_grid(norm_sum_noise, sigma=random.randint(10, 20),
-                                                             points=random.randint(2, 6), crop=crop)
-            full_noise = exposure.rescale_intensity(noise_elastic, out_range=(0, full_noise_level))
+        target = img.copy()
+        img += full_noise
+        img = exposure.rescale_intensity(img, out_range=(0, 255))
 
-            target = img.copy()
-            img += full_noise
-            img = exposure.rescale_intensity(img, out_range=(0, 255))
+        target_slim = img.copy()
+        all_coords = {}
+        mask = np.zeros((out_image_size, out_image_size))
 
-            target_slim = img.copy()
-            all_coords = {}
-            mask = np.zeros((out_image_size, out_image_size))
+        for i in range(0, len(spot_coords[0])):
+            x, y = spot_coords[1][i], spot_coords[0][i]
+            pos = (x, y)
+            all_coords[i] = {"x": x, "y": y}
+            target_slim = apply_kernel(target_slim, y, x, kernel)
+            cv2.circle(mask, pos, 2, (255, 255, 255), -1)
 
-            for i in range(0, len(spot_coords[0])):
-                x, y = spot_coords[1][i], spot_coords[0][i]
-                pos = (x, y)
-                all_coords[i] = {"x": x, "y": y}
-                target_slim = apply_kernel(target_slim, y, x, kernel)
-                cv2.circle(mask, pos, 2, (255, 255, 255), -1)
+        cv2.imwrite(os.path.join(root, "original", str(idx) + ".png"), img)
+        cv2.imwrite(os.path.join(root, "slim", str(idx) + ".png"), target_slim)
+        cv2.imwrite(os.path.join(root, "masks", str(idx) + ".png"), mask)
 
-            cv2.imwrite(os.path.join(root, str(percent), "original", str(idx) + ".png"), img)
-            cv2.imwrite(os.path.join(root, str(percent), "slim", str(idx) + ".png"), target_slim)
-            cv2.imwrite(os.path.join(root, str(percent), "masks", str(idx) + ".png"), mask)
-
-            with open(os.path.join(root, str(percent), "csv", str(idx) + '.csv'), 'w') as f:
-                for key in all_coords.keys():
-                    f.write("%s,%s\n" % (all_coords[key]["x"], all_coords[key]["y"]))
+        with open(os.path.join(root, "csv", str(idx) + '.csv'), 'w') as f:
+            for key in all_coords.keys():
+                f.write("%s,%s\n" % (all_coords[key]["x"], all_coords[key]["y"]))
