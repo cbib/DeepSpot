@@ -105,7 +105,7 @@ if __name__ == '__main__':
     spot_number = 100
     kernel = np.array([[200, 230, 200], [230, 255, 230], [200, 230, 200]])
     out_image_size = 256
-    image_number
+    image_number = 5
 
 
     pathlib.Path(os.path.join(root, 'original')).mkdir(parents=True, exist_ok=True)
@@ -126,7 +126,7 @@ if __name__ == '__main__':
 
         for i in range(0, spot_number):
             spot_size = random.randint(4, 8)
-            kernel_size = random.randint(13, 17)
+            kernel_size = random.randint(13, 18)
             coord_map2 = random_unispots_coordinates(out_image_size, out_image_size)
             psf_kernel = gaussian_kernel(kernel_size, std=spot_size)
             img2 = signal.convolve2d(coord_map2, psf_kernel, mode="same")
@@ -172,8 +172,7 @@ if __name__ == '__main__':
             cv2.circle(mask, pos, 2, (255, 255, 255), -1)
 
         cv2.imwrite(os.path.join(root, "original", str(idx) + ".png"), img)
-        cv2.imwrite(os.path.join(root, "slim", str(idx) + ".png"), target_slim)
-        cv2.imwrite(os.path.join(root, "masks", str(idx) + ".png"), mask)
+        cv2.imwrite(os.path.join(root, "target", str(idx) + ".png"), target_slim)
 
         with open(os.path.join(root, "csv", str(idx) + '.csv'), 'w') as f:
             for key in all_coords.keys():
