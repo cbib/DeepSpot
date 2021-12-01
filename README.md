@@ -11,10 +11,18 @@ architecture (B) to automatically enhance the mRNA spots in images.
 | ![](figures/network.svg) |
 | ![](figures/original_vs_pred.png) |
 
+## DeepSpot plugin for Napari 
+
+A Napari plugin is available [here](https://github.com/ebouilhol/napari-DeepSpot) to use DeepSpot pretrained model. 
+Napari uses a lot of memory so for large volume of images it is recommended to use the following instruction instead of the DeepSpot plugin.
+
+
+
 ## Installation
 Clone the repository from [github](https://github.com/cbib/DeepSpot)
 
 `git clone https://github.com/cbib/deepspot.git`
+
 
 
 ### Install dependencies with Conda 
