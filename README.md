@@ -18,7 +18,9 @@ Napari uses a lot of memory so for large volume of images it is recommended to u
 
 
 
-## Installation
+## Buil DeepSpot from source
+
+### Installation
 Clone the repository from [github](https://github.com/cbib/DeepSpot)
 
 `git clone https://github.com/cbib/deepspot.git`
